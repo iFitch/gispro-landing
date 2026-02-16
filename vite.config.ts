@@ -6,6 +6,12 @@ export default defineConfig({
   base: '/',
   build: {
     outDir: 'dist',
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        '404': '404.html',
+      },
+    },
   },
   server: {
     port: 3000,
