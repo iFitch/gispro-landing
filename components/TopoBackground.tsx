@@ -13,10 +13,12 @@ export const TopoBackground: React.FC = () => {
 
     // Config
     const thresholdIncrement = 5; 
-    const thickLineThresholdMultiple = 5; // Thicker line every X steps
-    const res = 10; // Reduced from 20 to 10 for smoother lines
-    const baseZOffset = 0.0001; // Speed of auto-movement
-    const lineColor = '#b45309'; // gis-topo color
+    const thickLineThresholdMultiple = 5;
+    const res = 10;
+    const baseZSpeed = 0.000006;
+    const targetFps = 24;
+    const frameInterval = 1000 / targetFps;
+    const lineColor = '#b45309';
 
     // State
     let animationFrameId: number;
@@ -27,20 +29,18 @@ export const TopoBackground: React.FC = () => {
     let noiseMin = 100;
     let noiseMax = 0;
     let currentThreshold = 0;
+    let lastFrameTime = 0;
+    let isPaused = false;
 
     const canvasSize = () => {
       if (!canvas.parentElement) return;
       const rect = canvas.parentElement.getBoundingClientRect();
-      
-      // Handle DPI
       const dpr = window.devicePixelRatio || 1;
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-      
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
-
       cols = Math.floor(rect.width / res) + 1;
       rows = Math.floor(rect.height / res) + 1;
     };
@@ -49,10 +49,10 @@ export const TopoBackground: React.FC = () => {
       noiseMin = 100;
       noiseMax = 0;
       for (let y = 0; y < rows; y++) {
-        inputValues[y] = [];
+        if (!inputValues[y]) {
+          inputValues[y] = new Array(cols + 1);
+        }
         for (let x = 0; x <= cols; x++) {
-            // Noise generation
-            // Scale adjusted to 0.01 (was 0.02) to maintain visual scale with halved resolution (res 20->10)
             const noiseVal = ChriscoursesPerlinNoise.noise(x * 0.01, y * 0.01, zOffset) * 100;
             inputValues[y][x] = noiseVal;
             
@@ -147,20 +147,21 @@ export const TopoBackground: React.FC = () => {
         ctx.strokeStyle = lineColor;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        
-        // Thicker lines: 2.5px for index contours, 1px for intermediate contours
         ctx.lineWidth = currentThreshold % (thresholdIncrement * thickLineThresholdMultiple) === 0 ? 2.5 : 1.2;
-        
-        // Removed opacity to make lines clear
-        // ctx.globalAlpha = 0.5;
 
         for (let y = 0; y < rows - 1; y++) {
+            const row = inputValues[y];
+            const nextRow = inputValues[y + 1];
             for (let x = 0; x < cols - 1; x++) {
-                // Optimization: skip if all corners are same side of threshold
-                const nw = inputValues[y][x] > currentThreshold;
-                const ne = inputValues[y][x + 1] > currentThreshold;
-                const se = inputValues[y + 1][x + 1] > currentThreshold;
-                const sw = inputValues[y + 1][x] > currentThreshold;
+                const nwVal = row[x];
+                const neVal = row[x + 1];
+                const seVal = nextRow[x + 1];
+                const swVal = nextRow[x];
+
+                const nw = nwVal > currentThreshold;
+                const ne = neVal > currentThreshold;
+                const se = seVal > currentThreshold;
+                const sw = swVal > currentThreshold;
 
                 if (nw === ne && ne === se && se === sw) continue;
 
@@ -171,15 +172,33 @@ export const TopoBackground: React.FC = () => {
         ctx.stroke();
     };
 
-    const animate = () => {
-        // Clear logic
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const animate = (time: number) => {
+        if (isPaused) {
+            animationFrameId = requestAnimationFrame(animate);
+            return;
+        }
 
-        // Update Physics
-        zOffset += baseZOffset;
+        if (!lastFrameTime) {
+            lastFrameTime = time;
+        }
+
+        const delta = time - lastFrameTime;
+        if (delta < frameInterval) {
+            animationFrameId = requestAnimationFrame(animate);
+            return;
+        }
+
+        lastFrameTime = time;
+
+        const dpr = window.devicePixelRatio || 1;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const width = canvas.width / dpr;
+        const height = canvas.height / dpr;
+        ctx.clearRect(0, 0, width, height);
+
+        zOffset += baseZSpeed * delta;
         generateNoise();
 
-        // Render Loop
         const roundedNoiseMin = Math.floor(noiseMin / thresholdIncrement) * thresholdIncrement;
         const roundedNoiseMax = Math.ceil(noiseMax / thresholdIncrement) * thresholdIncrement;
 
@@ -193,15 +212,24 @@ export const TopoBackground: React.FC = () => {
 
     // Initialization
     canvasSize();
-    animate();
+    animationFrameId = requestAnimationFrame(animate);
 
     // Event Listeners
     const handleResize = () => canvasSize();
     window.addEventListener('resize', handleResize);
 
+    const handleVisibilityChange = () => {
+        isPaused = document.hidden;
+        if (!isPaused) {
+            lastFrameTime = performance.now();
+        }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
         cancelAnimationFrame(animationFrameId);
         window.removeEventListener('resize', handleResize);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
