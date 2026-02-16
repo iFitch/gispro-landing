@@ -16,7 +16,7 @@ export const TopoBackground: React.FC = () => {
     const thickLineThresholdMultiple = 5;
     const res = 10;
     const baseZSpeed = 0.000006;
-    const targetFps = 24;
+    const targetFps = 20;
     const frameInterval = 1000 / targetFps;
     const lineColor = '#b45309';
 
