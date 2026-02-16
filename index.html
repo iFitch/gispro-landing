@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Oleg Bizin | GIS Professional</title>
+    <meta name="description" content="Oleg Bizin - GIS Professional (GISP) with 15+ years experience in Enterprise GIS, Data Architecture, and ETL." />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              gis: {
+                bg: '#fbfaf8',      // Warm paper white
+                text: '#292524',    // Warm black (Stone-800)
+                muted: '#57534e',   // Stone-600
+                accent: '#0f766e',  // Deep Teal (Teal-700) for primary actions
+                topo: '#b45309',    // Topo Brown (Amber-700)
+                surface: '#ffffff', // Pure white for cards
+                border: '#e7e5e4',  // Stone-200
+                subtle: '#f5f5f4',  // Stone-100
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #fbfaf8;
+        /* Paper texture */
+        background-image: url('https://images.unsplash.com/photo-1621193677209-65c8fce6b229?q=80&w=2000&auto=format&fit=crop');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed; /* Parallax feel */
+        background-blend-mode: soft-light; /* Blends the texture into the bg color */
+        color: #292524;
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d6d3d1; /* Stone-300 */
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #a8a29e; /* Stone-400 */
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.564.0",
+    "framer-motion": "https://esm.sh/framer-motion@^12.34.0",
+    "@chriscourses/perlin-noise": "https://esm.sh/@chriscourses/perlin-noise"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
